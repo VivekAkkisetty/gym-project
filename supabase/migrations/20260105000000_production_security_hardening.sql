@@ -17,14 +17,6 @@ ALTER TABLE IF EXISTS public.workout_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS public.progress ENABLE ROW LEVEL SECURITY;
 ALTER TABLE IF EXISTS public.daily_tracking ENABLE ROW LEVEL SECURITY;
 
--- Enforce RLS on storage if installed
-DO $$
-BEGIN
-    IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'storage') THEN
-        ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
-        ALTER TABLE storage.buckets ENABLE ROW LEVEL SECURITY;
-    END IF;
-END $$;
 
 -- 2. HARDEN REFERENCE TABLES (foods & exercises)
 -- Revoke all direct modification permissions from anon and authenticated roles

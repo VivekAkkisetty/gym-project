@@ -470,8 +470,7 @@ BEGIN
             public = false,
             file_size_limit = 5242880,
             allowed_mime_types = ARRAY['image/jpeg', 'image/png', 'image/webp'];
-
-        ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+        -- storage.objects already has RLS enabled by default in Supabase (owned by supabase_storage_admin)
 
         DROP POLICY IF EXISTS "Users can only upload their own progress photos" ON storage.objects;
         CREATE POLICY "Users can only upload their own progress photos"
