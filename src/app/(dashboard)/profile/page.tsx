@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   User,
   Shield,
@@ -8,6 +9,9 @@ import {
   Save,
   Lock,
   Flame,
+  AlertTriangle,
+  Trash2,
+  RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
@@ -19,7 +23,8 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/components/providers/AuthProvider";
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const router = useRouter();
+  const { user, signOut } = useAuth();
 
   // Personal Info Form State
   const [fullName, setFullName] = useState(user?.user_metadata?.full_name || "Alex Walker");
@@ -45,6 +50,49 @@ export default function ProfilePage() {
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
 
   const [isSaving, setIsSaving] = useState(false);
+
+  // Danger Zone State
+  const [deleteConfirmationInput, setDeleteConfirmationInput] = useState("");
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
+  const [isPurgingData, setIsPurgingData] = useState(false);
+
+  const handlePurgeData = async () => {
+    if (!window.confirm("Are you sure you want to purge all your tracking records, workouts, and progress photos? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      setIsPurgingData(true);
+      const res = await fetch("/api/account/purge", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to purge data");
+      toast.success(data.message || "All personal tracking data purged successfully.");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Error purging data");
+    } finally {
+      setIsPurgingData(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmationInput !== "DELETE") {
+      toast.error('Please type "DELETE" to confirm permanent account deletion.');
+      return;
+    }
+
+    try {
+      setIsDeletingAccount(true);
+      const res = await fetch("/api/account/delete", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to delete account");
+      toast.success("Account deleted. Signing out...");
+      await signOut?.();
+      router.push("/login?deleted=true");
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Error deleting account");
+      setIsDeletingAccount(false);
+    }
+  };
 
   const handleSaveProfile = (e: React.FormEvent) => {
     e.preventDefault();
@@ -418,6 +466,67 @@ export default function ProfilePage() {
                   </Button>
                 </div>
               </form>
+            </CardContent>
+          </Card>
+
+          {/* Danger Zone Card */}
+          <Card className="border-red-500/30 bg-red-950/10 mt-6">
+            <CardHeader>
+              <div className="flex items-center gap-2 text-red-500">
+                <AlertTriangle className="h-5 w-5" />
+                <CardTitle className="text-red-500">Danger Zone</CardTitle>
+              </div>
+              <CardDescription>
+                Irreversible data purging and permanent account deletion under GDPR & CCPA privacy standards.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Purge Fitness Logs */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl border border-red-500/20 bg-background/50">
+                <div>
+                  <h4 className="font-semibold text-foreground text-sm">Purge Fitness & Tracking Logs</h4>
+                  <p className="text-xs text-muted-foreground mt-0.5 max-w-md">
+                    Permanently wipe all logged daily tracking data, body measurements, workout sessions, and private progress photos. Your profile, account credentials, and active subscription remain active.
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={handlePurgeData}
+                  disabled={isPurgingData}
+                  className="border-red-500/40 text-red-500 hover:bg-red-500/10 shrink-0 gap-2"
+                >
+                  <RefreshCw className={`h-4 w-4 ${isPurgingData ? "animate-spin" : ""}`} />
+                  {isPurgingData ? "Purging..." : "Purge Tracking Data"}
+                </Button>
+              </div>
+
+              {/* Delete Account */}
+              <div className="p-4 rounded-xl border border-red-500/30 bg-red-500/5 space-y-3">
+                <div className="flex items-center gap-2 text-red-500">
+                  <Trash2 className="h-4 w-4" />
+                  <h4 className="font-semibold text-sm">Delete Account Permanently</h4>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Permanently deletes your account, authentication identity, custom diet plans, workout routines, tracking records, and storage assets. This action is instantaneous and cannot be reversed.
+                </p>
+                <div className="pt-2 flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                  <Input
+                    placeholder='Type "DELETE" to confirm'
+                    value={deleteConfirmationInput}
+                    onChange={(e) => setDeleteConfirmationInput(e.target.value)}
+                    className="max-w-xs border-red-500/30 focus-visible:ring-red-500"
+                  />
+                  <Button
+                    variant="destructive"
+                    onClick={handleDeleteAccount}
+                    disabled={deleteConfirmationInput !== "DELETE" || isDeletingAccount}
+                    className="gap-2"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    {isDeletingAccount ? "Deleting Account..." : "Delete My Account"}
+                  </Button>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>

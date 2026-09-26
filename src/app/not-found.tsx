@@ -1,36 +1,41 @@
-import React from "react";
 import Link from "next/link";
-import { Dumbbell, ArrowLeft, Home } from "lucide-react";
+import { Dumbbell, Home, Compass } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function NotFound() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center bg-background">
-      <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-500/10 text-emerald-500 mb-6">
-        <Dumbbell className="h-8 w-8" />
-      </div>
-      <h1 className="text-4xl font-black tracking-tight text-foreground sm:text-5xl">
-        404
-      </h1>
-      <h2 className="mt-2 text-xl font-bold text-foreground">
-        Workout Routine Not Found
-      </h2>
-      <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-        The fitness route or resource you are looking for has been moved or does not exist in the platform.
-      </p>
-      <div className="mt-6 flex items-center gap-3">
-        <Link href="/">
-          <Button variant="outline" size="sm" className="gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Home
+    <div className="min-h-screen flex items-center justify-center p-6 bg-background">
+      <div className="max-w-md w-full text-center space-y-6 p-8 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-card shadow-xl">
+        <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-3xl bg-emerald-500/10 text-emerald-500 ring-8 ring-emerald-500/5">
+          <Dumbbell className="h-10 w-10 rotate-45" />
+        </div>
+
+        <div className="space-y-2">
+          <span className="text-xs font-bold uppercase tracking-widest text-emerald-500">
+            404 Error
+          </span>
+          <h1 className="text-3xl font-extrabold tracking-tight text-foreground">
+            Page Not Found
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            The page or training resource you are looking for does not exist or has been moved.
+          </p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
+          <Button asChild className="gap-2">
+            <Link href="/dashboard">
+              <Home className="h-4 w-4" />
+              Go to Dashboard
+            </Link>
           </Button>
-        </Link>
-        <Link href="/dashboard">
-          <Button size="sm" className="gap-2">
-            <Home className="h-4 w-4" />
-            Dashboard
+          <Button variant="outline" asChild className="gap-2">
+            <Link href="/exercises">
+              <Compass className="h-4 w-4" />
+              Browse Exercises
+            </Link>
           </Button>
-        </Link>
+        </div>
       </div>
     </div>
   );

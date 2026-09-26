@@ -55,7 +55,8 @@ export async function updateSession(request: NextRequest) {
       request.nextUrl.pathname.startsWith("/calculators") ||
       request.nextUrl.pathname.startsWith("/tracking") ||
       request.nextUrl.pathname.startsWith("/progress") ||
-      request.nextUrl.pathname.startsWith("/profile");
+      request.nextUrl.pathname.startsWith("/profile") ||
+      request.nextUrl.pathname.startsWith("/assistant");
 
     if (user && isAuthRoute) {
       // User is logged in, redirect them away from login/signup to dashboard
