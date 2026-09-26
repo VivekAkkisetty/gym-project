@@ -6,7 +6,7 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[];
 
-export interface Database {
+export type Database = {
   public: {
     Tables: {
       profiles: {
@@ -85,6 +85,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       user_preferences: {
         Row: {
@@ -132,6 +133,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       foods: {
         Row: {
@@ -140,6 +142,9 @@ export interface Database {
           name: string;
           brand: string | null;
           barcode: string | null;
+          category: string;
+          dietary_type: string;
+          substitution_group: string;
           serving_size: number;
           serving_unit: string;
           calories: number;
@@ -158,6 +163,9 @@ export interface Database {
           name: string;
           brand?: string | null;
           barcode?: string | null;
+          category?: string;
+          dietary_type?: string;
+          substitution_group?: string;
           serving_size?: number;
           serving_unit?: string;
           calories: number;
@@ -176,6 +184,9 @@ export interface Database {
           name?: string;
           brand?: string | null;
           barcode?: string | null;
+          category?: string;
+          dietary_type?: string;
+          substitution_group?: string;
           serving_size?: number;
           serving_unit?: string;
           calories?: number;
@@ -188,6 +199,7 @@ export interface Database {
           is_verified?: boolean;
           created_at?: string;
         };
+        Relationships: [];
       };
       exercises: {
         Row: {
@@ -219,6 +231,10 @@ export interface Database {
           difficulty: "beginner" | "intermediate" | "advanced";
           instructions: string | null;
           video_url: string | null;
+          default_sets: number;
+          default_reps: string;
+          rest_time_seconds: number;
+          is_bodyweight: boolean;
           created_at: string;
         };
         Insert: {
@@ -250,6 +266,10 @@ export interface Database {
           difficulty?: "beginner" | "intermediate" | "advanced";
           instructions?: string | null;
           video_url?: string | null;
+          default_sets?: number;
+          default_reps?: string;
+          rest_time_seconds?: number;
+          is_bodyweight?: boolean;
           created_at?: string;
         };
         Update: {
@@ -281,8 +301,178 @@ export interface Database {
           difficulty?: "beginner" | "intermediate" | "advanced";
           instructions?: string | null;
           video_url?: string | null;
+          default_sets?: number;
+          default_reps?: string;
+          rest_time_seconds?: number;
+          is_bodyweight?: boolean;
           created_at?: string;
         };
+        Relationships: [];
+      };
+      diet_plans: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          description: string | null;
+          daily_calories: number;
+          target_protein_g: number;
+          target_carbs_g: number;
+          target_fat_g: number;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          description?: string | null;
+          daily_calories: number;
+          target_protein_g: number;
+          target_carbs_g: number;
+          target_fat_g: number;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          description?: string | null;
+          daily_calories?: number;
+          target_protein_g?: number;
+          target_carbs_g?: number;
+          target_fat_g?: number;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      diet_meals: {
+        Row: {
+          id: string;
+          diet_plan_id: string | null;
+          user_id: string;
+          meal_type: "breakfast" | "lunch" | "dinner" | "snack" | "pre_workout" | "post_workout";
+          name: string;
+          food_items: Json;
+          total_calories: number;
+          total_protein: number;
+          total_carbs: number;
+          total_fat: number;
+          order_index: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          diet_plan_id?: string | null;
+          user_id: string;
+          meal_type: "breakfast" | "lunch" | "dinner" | "snack" | "pre_workout" | "post_workout";
+          name: string;
+          food_items?: Json;
+          total_calories?: number;
+          total_protein?: number;
+          total_carbs?: number;
+          total_fat?: number;
+          order_index?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          diet_plan_id?: string | null;
+          user_id?: string;
+          meal_type?: "breakfast" | "lunch" | "dinner" | "snack" | "pre_workout" | "post_workout";
+          name?: string;
+          food_items?: Json;
+          total_calories?: number;
+          total_protein?: number;
+          total_carbs?: number;
+          total_fat?: number;
+          order_index?: number;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      workout_plans: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          description: string | null;
+          split_type: "push_pull_legs" | "upper_lower" | "bro_split" | "full_body" | "custom";
+          days_per_week: number;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          description?: string | null;
+          split_type?: "push_pull_legs" | "upper_lower" | "bro_split" | "full_body" | "custom";
+          days_per_week?: number;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          name?: string;
+          description?: string | null;
+          split_type?: "push_pull_legs" | "upper_lower" | "bro_split" | "full_body" | "custom";
+          days_per_week?: number;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      workout_sessions: {
+        Row: {
+          id: string;
+          user_id: string;
+          workout_plan_id: string | null;
+          title: string;
+          duration_minutes: number;
+          started_at: string;
+          completed_at: string | null;
+          notes: string | null;
+          rpe: number | null;
+          exercises_log: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          workout_plan_id?: string | null;
+          title: string;
+          duration_minutes?: number;
+          started_at?: string;
+          completed_at?: string | null;
+          notes?: string | null;
+          rpe?: number | null;
+          exercises_log?: Json;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          workout_plan_id?: string | null;
+          title?: string;
+          duration_minutes?: number;
+          started_at?: string;
+          completed_at?: string | null;
+          notes?: string | null;
+          rpe?: number | null;
+          exercises_log?: Json;
+          created_at?: string;
+        };
+        Relationships: [];
       };
       daily_tracking: {
         Row: {
@@ -297,6 +487,7 @@ export interface Database {
           water_intake_ml: number;
           steps_count: number;
           sleep_hours: number;
+          workout_completed: boolean;
           mood: "great" | "good" | "neutral" | "tired" | "stressed" | null;
           created_at: string;
           updated_at: string;
@@ -313,6 +504,7 @@ export interface Database {
           water_intake_ml?: number;
           steps_count?: number;
           sleep_hours?: number;
+          workout_completed?: boolean;
           mood?: "great" | "good" | "neutral" | "tired" | "stressed" | null;
           created_at?: string;
           updated_at?: string;
@@ -329,10 +521,12 @@ export interface Database {
           water_intake_ml?: number;
           steps_count?: number;
           sleep_hours?: number;
+          workout_completed?: boolean;
           mood?: "great" | "good" | "neutral" | "tired" | "stressed" | null;
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       progress: {
         Row: {
@@ -347,6 +541,7 @@ export interface Database {
           arms_cm: number | null;
           thighs_cm: number | null;
           calves_cm: number | null;
+          neck_cm: number | null;
           photo_urls: Json;
           notes: string | null;
           created_at: string;
@@ -363,6 +558,7 @@ export interface Database {
           arms_cm?: number | null;
           thighs_cm?: number | null;
           calves_cm?: number | null;
+          neck_cm?: number | null;
           photo_urls?: Json;
           notes?: string | null;
           created_at?: string;
@@ -379,11 +575,32 @@ export interface Database {
           arms_cm?: number | null;
           thighs_cm?: number | null;
           calves_cm?: number | null;
+          neck_cm?: number | null;
           photo_urls?: Json;
           notes?: string | null;
           created_at?: string;
         };
+        Relationships: [];
       };
     };
+    Views: {
+      [_ in never]: never;
+    };
+    Functions: {
+      delete_current_user_account: {
+        Args: Record<PropertyKey, never>;
+        Returns: void;
+      };
+      purge_current_user_data: {
+        Args: Record<PropertyKey, never>;
+        Returns: void;
+      };
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    CompositeTypes: {
+      [_ in never]: never;
+    };
   };
-}
+};

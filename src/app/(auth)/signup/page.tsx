@@ -74,6 +74,28 @@ export default function SignupPage() {
         return;
       }
 
+      if (data.user) {
+        // Create corresponding profile record using strictly authenticated user ID
+        try {
+          await supabase.from("profiles").upsert(
+            {
+              id: data.user.id,
+              full_name: fullName,
+            },
+            { onConflict: "id" }
+          );
+
+          await supabase.from("user_preferences").upsert(
+            {
+              user_id: data.user.id,
+            },
+            { onConflict: "user_id" }
+          );
+        } catch {
+          // If trigger already handled insertion, ignore duplicate insert gracefully
+        }
+      }
+
       if (data.session) {
         toast.success("Account created! Redirecting to dashboard...");
         router.push("/dashboard");
