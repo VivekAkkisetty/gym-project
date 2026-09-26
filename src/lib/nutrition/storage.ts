@@ -124,6 +124,8 @@ export function getSavedDietPlans(): DietPlan[] {
   }
 }
 
+export const getStoredDietPlans = getSavedDietPlans;
+
 export function saveDietPlan(plan: DietPlan): DietPlan[] {
   if (typeof window === "undefined") return [plan];
 
