@@ -16,6 +16,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Flame,
+  Bot,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/components/providers/AuthProvider";
@@ -69,6 +70,12 @@ export const navigationItems = [
     href: "/progress",
     icon: TrendingUp,
     badge: null,
+  },
+  {
+    name: "AI Coach & Tools",
+    href: "/assistant",
+    icon: Bot,
+    badge: "AI",
   },
   {
     name: "Profile & Settings",

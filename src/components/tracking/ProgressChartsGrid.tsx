@@ -18,6 +18,8 @@ import {
 import { Scale, Ruler, Flame, Award, Footprints, Dumbbell } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
+type TooltipValue = number | string | readonly (string | number)[] | undefined;
+
 interface ProgressChartsGridProps {
   weightData: { date: string; weight: number; rollingAvg: number }[];
   circumferenceData: { date: string; waist: number | null; chest: number | null; arms: number | null; neck: number | null }[];
@@ -63,7 +65,7 @@ export function ProgressChartsGrid({
                 <YAxis domain={["dataMin - 1", "dataMax + 1"]} tick={{ fontSize: 10, fill: "#71717a" }} tickLine={false} axisLine={false} />
                 <Tooltip
                   contentStyle={{ backgroundColor: "#18181b", borderColor: "#27272a", borderRadius: "8px", fontSize: "11px" }}
-                  formatter={(val: any) => [typeof val === "number" ? `${val} kg` : val, ""]}
+                  formatter={(val: TooltipValue) => [typeof val === "number" ? `${val} kg` : String(val ?? ""), ""]}
                 />
                 <Area type="monotone" dataKey="weight" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#weightGrad)" name="Recorded" />
                 <Line type="monotone" dataKey="rollingAvg" stroke="#3b82f6" strokeWidth={2} strokeDasharray="4 4" dot={false} name="3-Pt Average" />
@@ -93,7 +95,7 @@ export function ProgressChartsGrid({
                 <YAxis domain={["dataMin - 2", "dataMax + 2"]} tick={{ fontSize: 10, fill: "#71717a" }} tickLine={false} axisLine={false} />
                 <Tooltip
                   contentStyle={{ backgroundColor: "#18181b", borderColor: "#27272a", borderRadius: "8px", fontSize: "11px" }}
-                  formatter={(val: any) => [typeof val === "number" ? `${val} cm` : val, ""]}
+                  formatter={(val: TooltipValue) => [typeof val === "number" ? `${val} cm` : String(val ?? ""), ""]}
                 />
                 <Line type="monotone" dataKey="waist" stroke="#06b6d4" strokeWidth={2} name="Waist" dot={{ r: 3 }} />
                 <Line type="monotone" dataKey="chest" stroke="#f59e0b" strokeWidth={1.5} name="Chest" dot={false} />
@@ -125,7 +127,7 @@ export function ProgressChartsGrid({
                 <YAxis tick={{ fontSize: 10, fill: "#71717a" }} tickLine={false} axisLine={false} />
                 <Tooltip
                   contentStyle={{ backgroundColor: "#18181b", borderColor: "#27272a", borderRadius: "8px", fontSize: "11px" }}
-                  formatter={(val: any) => [typeof val === "number" ? `${val} kcal` : val, ""]}
+                  formatter={(val: TooltipValue) => [typeof val === "number" ? `${val} kcal` : String(val ?? ""), ""]}
                 />
                 <ReferenceLine y={2400} stroke="#ef4444" strokeDasharray="3 3" label={{ value: "Target", fill: "#ef4444", fontSize: 9, position: "top" }} />
                 <Bar dataKey="calories" fill="#f59e0b" radius={[4, 4, 0, 0]} name="Consumed" />
@@ -161,7 +163,7 @@ export function ProgressChartsGrid({
                 <YAxis domain={[100, 200]} tick={{ fontSize: 10, fill: "#71717a" }} tickLine={false} axisLine={false} />
                 <Tooltip
                   contentStyle={{ backgroundColor: "#18181b", borderColor: "#27272a", borderRadius: "8px", fontSize: "11px" }}
-                  formatter={(val: any) => [typeof val === "number" ? `${val}g` : val, ""]}
+                  formatter={(val: TooltipValue) => [typeof val === "number" ? `${val}g` : String(val ?? ""), ""]}
                 />
                 <ReferenceLine y={160} stroke="#10b981" strokeDasharray="3 3" label={{ value: "160g Goal", fill: "#10b981", fontSize: 9, position: "top" }} />
                 <Area type="monotone" dataKey="protein" stroke="#a855f7" strokeWidth={2} fillOpacity={1} fill="url(#proteinGrad)" name="Protein" />
@@ -191,7 +193,10 @@ export function ProgressChartsGrid({
                 <YAxis tick={{ fontSize: 10, fill: "#71717a" }} tickLine={false} axisLine={false} />
                 <Tooltip
                   contentStyle={{ backgroundColor: "#18181b", borderColor: "#27272a", borderRadius: "8px", fontSize: "11px" }}
-                  formatter={(val: any) => [typeof val === "number" ? val.toLocaleString() : val, "Steps"]}
+                  formatter={(val: TooltipValue) => [
+                    typeof val === "number" ? val.toLocaleString() : String(val ?? ""),
+                    "Steps",
+                  ]}
                 />
                 <ReferenceLine y={10000} stroke="#6366f1" strokeDasharray="3 3" label={{ value: "10k Goal", fill: "#6366f1", fontSize: 9, position: "top" }} />
                 <Bar dataKey="steps" fill="#6366f1" radius={[4, 4, 0, 0]} name="Steps" />

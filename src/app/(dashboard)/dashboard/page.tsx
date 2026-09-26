@@ -11,6 +11,7 @@ import {
   ArrowRight,
   TrendingUp,
   Sparkles,
+  Bot,
 } from "lucide-react";
 import { MetricCard } from "@/components/dashboard/MetricCard";
 import { CalorieRingChart } from "@/components/dashboard/CalorieRingChart";
@@ -21,6 +22,9 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useAuth } from "@/components/providers/AuthProvider";
 import { RecentLogItem, ActivityDayPoint, WeightHistoryPoint } from "@/types/fitness";
+import { SmartRecommendationsBanner } from "@/components/ai/SmartRecommendationsBanner";
+import { generateSmartRecommendations } from "@/lib/ai/recommendations";
+import { getStoredDailyLogs } from "@/lib/tracking/storage";
 
 export default function DashboardPage() {
   const { user } = useAuth();
@@ -87,6 +91,9 @@ export default function DashboardPage() {
     },
   ];
 
+  const logs = getStoredDailyLogs();
+  const recommendations = generateSmartRecommendations(logs);
+
   return (
     <div className="space-y-6">
       {/* Welcome & Highlights Banner */}
@@ -106,6 +113,12 @@ export default function DashboardPage() {
         </div>
 
         <div className="flex items-center gap-3">
+          <Link href="/assistant">
+            <Button variant="outline" className="shadow-sm font-semibold border-emerald-500/30 text-emerald-400 gap-1.5">
+              <Bot className="h-4 w-4" />
+              <span>Ask AI Coach</span>
+            </Button>
+          </Link>
           <Link href="/workout">
             <Button className="shadow-sm font-semibold">
               <Dumbbell className="mr-2 h-4 w-4" />
@@ -114,6 +127,9 @@ export default function DashboardPage() {
           </Link>
         </div>
       </div>
+
+      {/* Proactive Smart Recommendations Banner */}
+      <SmartRecommendationsBanner recommendations={recommendations} />
 
       {/* Top Metric Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

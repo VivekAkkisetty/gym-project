@@ -192,3 +192,14 @@ export function setActiveSplitPlan(plan: WorkoutSplitPlan): void {
     console.error("Failed to set active split:", err);
   }
 }
+
+export function getStoredWorkoutSplits(): WorkoutSplitPlan[] {
+  const active = getActiveSplitPlan();
+  const others = WORKOUT_SPLITS.filter((s) => s.id !== active.id);
+  return [active, ...others];
+}
+
+export function saveWorkoutSplitPlan(plan: WorkoutSplitPlan): void {
+  setActiveSplitPlan(plan);
+}
+
