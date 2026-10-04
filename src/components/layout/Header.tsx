@@ -10,7 +10,6 @@ import {
   Settings,
   LogOut,
   ChevronDown,
-  Flame,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
@@ -83,9 +82,9 @@ export function Header({ onOpenQuickLog }: HeaderProps) {
             </Button>
           )}
 
-          <div className="hidden sm:flex items-center gap-1.5 px-2 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
-            <Flame className="h-3.5 w-3.5 text-amber-500 fill-amber-500" />
-            <span>7-Day Streak</span>
+          <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-medium">
+            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+            <span>Sync Active</span>
           </div>
 
           <ThemeToggle />

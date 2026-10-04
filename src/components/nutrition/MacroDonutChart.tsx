@@ -4,7 +4,8 @@ import React from "react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { useMounted } from "@/lib/use-mounted";
+import { useMounted } from "@/hooks";
+
 
 interface MacroDonutChartProps {
   caloriesConsumed: number;

@@ -11,7 +11,8 @@ import {
 } from "recharts";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { WeightHistoryPoint } from "@/types/fitness";
-import { useMounted } from "@/lib/use-mounted";
+import { useMounted } from "@/hooks";
+
 
 interface WeightTrendChartProps {
   data: WeightHistoryPoint[];

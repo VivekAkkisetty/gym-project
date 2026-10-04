@@ -23,7 +23,11 @@ import { Progress } from "@/components/ui/progress";
 import { getStoredDailyLogs, saveDailyLog } from "@/lib/tracking/storage";
 import { DailyTrackingLog, TrackingMood } from "@/types/tracking";
 
+import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/components/providers/AuthProvider";
+
 export default function TrackingPage() {
+  const { user } = useAuth();
   const [logs, setLogs] = useState<DailyTrackingLog[]>(() => getStoredDailyLogs());
   const todayStr = new Date().toISOString().split("T")[0];
   const [selectedDate, setSelectedDate] = useState(todayStr);
@@ -31,14 +35,62 @@ export default function TrackingPage() {
   // Find existing log for selected date or default
   const existingForDate = logs.find((l) => l.trackingDate === selectedDate);
 
-  const [steps, setSteps] = useState(existingForDate ? existingForDate.stepsCount.toString() : "8500");
-  const [waterMl, setWaterMl] = useState(existingForDate ? existingForDate.waterIntakeMl : 2500);
-  const [calories, setCalories] = useState(existingForDate ? existingForDate.caloriesConsumed.toString() : "2350");
-  const [caloriesBurned, setCaloriesBurned] = useState(existingForDate ? existingForDate.caloriesBurned.toString() : "400");
-  const [protein, setProtein] = useState(existingForDate ? existingForDate.proteinConsumedG.toString() : "165");
-  const [sleepHours, setSleepHours] = useState(existingForDate ? existingForDate.sleepHours.toString() : "7.5");
-  const [workoutCompleted, setWorkoutCompleted] = useState(existingForDate ? existingForDate.workoutCompleted : true);
-  const [mood, setMood] = useState<TrackingMood>(existingForDate ? existingForDate.mood : "great");
+  const [steps, setSteps] = useState(existingForDate ? existingForDate.stepsCount.toString() : "");
+  const [waterMl, setWaterMl] = useState(existingForDate ? existingForDate.waterIntakeMl : 0);
+  const [calories, setCalories] = useState(existingForDate ? existingForDate.caloriesConsumed.toString() : "");
+  const [caloriesBurned, setCaloriesBurned] = useState(existingForDate ? existingForDate.caloriesBurned.toString() : "");
+  const [protein, setProtein] = useState(existingForDate ? existingForDate.proteinConsumedG.toString() : "");
+  const [sleepHours, setSleepHours] = useState(existingForDate ? existingForDate.sleepHours.toString() : "7.0");
+  const [workoutCompleted, setWorkoutCompleted] = useState(existingForDate ? existingForDate.workoutCompleted : false);
+  const [mood, setMood] = useState<TrackingMood>(existingForDate ? existingForDate.mood : "good");
+
+  // Load from Supabase on mount
+  React.useEffect(() => {
+    if (!user) return;
+    const supabase = createClient();
+    async function loadRemoteLogs() {
+      try {
+        const { data, error } = await supabase
+          .from("daily_tracking")
+          .select("*")
+          .eq("user_id", user!.id)
+          .order("tracking_date", { ascending: false });
+
+        if (!error && data && data.length > 0) {
+          const mapped: DailyTrackingLog[] = data.map((d) => ({
+            id: d.id,
+            trackingDate: d.tracking_date,
+            stepsCount: d.steps_count,
+            waterIntakeMl: d.water_intake_ml,
+            caloriesConsumed: d.calories_consumed,
+            caloriesBurned: d.calories_burned,
+            proteinConsumedG: d.protein_consumed_g,
+            carbsConsumedG: d.carbs_consumed_g,
+            fatConsumedG: d.fat_consumed_g,
+            sleepHours: d.sleep_hours,
+            workoutCompleted: d.workout_completed,
+            mood: (d.mood as TrackingMood) || "good",
+          }));
+          setLogs(mapped);
+          mapped.forEach((m) => saveDailyLog(m));
+          const current = mapped.find((l) => l.trackingDate === selectedDate);
+          if (current) {
+            setSteps(current.stepsCount.toString());
+            setWaterMl(current.waterIntakeMl);
+            setCalories(current.caloriesConsumed.toString());
+            setCaloriesBurned(current.caloriesBurned.toString());
+            setProtein(current.proteinConsumedG.toString());
+            setSleepHours(current.sleepHours.toString());
+            setWorkoutCompleted(current.workoutCompleted);
+            setMood(current.mood);
+          }
+        }
+      } catch (err) {
+        console.error("Error loading remote tracking logs:", err);
+      }
+    }
+    loadRemoteLogs();
+  }, [user, selectedDate]);
 
   // Sync state when date changes
   const handleDateChange = (newDate: string) => {
@@ -53,6 +105,15 @@ export default function TrackingPage() {
       setSleepHours(log.sleepHours.toString());
       setWorkoutCompleted(log.workoutCompleted);
       setMood(log.mood);
+    } else {
+      setSteps("");
+      setWaterMl(0);
+      setCalories("");
+      setCaloriesBurned("");
+      setProtein("");
+      setSleepHours("7.0");
+      setWorkoutCompleted(false);
+      setMood("good");
     }
   };
 
@@ -69,7 +130,7 @@ export default function TrackingPage() {
     toast.success(`Added +${amount} steps. Total: ${updated.toLocaleString()}`);
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
 
     const payload: DailyTrackingLog = {
@@ -90,6 +151,33 @@ export default function TrackingPage() {
     saveDailyLog(payload);
     const updatedLogs = getStoredDailyLogs();
     setLogs(updatedLogs);
+
+    if (user) {
+      try {
+        const supabase = createClient();
+        await supabase.from("daily_tracking").upsert(
+          {
+            user_id: user.id,
+            tracking_date: selectedDate,
+            steps_count: payload.stepsCount,
+            water_intake_ml: payload.waterIntakeMl,
+            calories_consumed: payload.caloriesConsumed,
+            calories_burned: payload.caloriesBurned,
+            protein_consumed_g: payload.proteinConsumedG,
+            carbs_consumed_g: payload.carbsConsumedG,
+            fat_consumed_g: payload.fatConsumedG,
+            sleep_hours: payload.sleepHours,
+            workout_completed: payload.workoutCompleted,
+            mood: payload.mood,
+            updated_at: new Date().toISOString(),
+          },
+          { onConflict: "user_id,tracking_date" }
+        );
+      } catch (err) {
+        console.error("Failed to sync daily tracking to database:", err);
+      }
+    }
+
     toast.success(`Daily metrics saved for ${selectedDate}!`);
   };
 

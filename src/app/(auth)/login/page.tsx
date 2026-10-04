@@ -3,7 +3,7 @@
 import React, { Suspense, useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Eye, EyeOff, Lock, Mail, ArrowRight } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, ArrowRight, MailCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,12 +16,14 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirectTo") || "/dashboard";
+  const emailPending = searchParams.get("confirmed") === "pending";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,16 +43,6 @@ function LoginForm() {
     setIsLoading(true);
 
     try {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-      if (supabaseUrl.includes("placeholder-project")) {
-        // Dev fallback when Supabase is not connected
-        toast.success("Welcome back! Signing in to local workspace...");
-        setTimeout(() => {
-          router.push(redirectTo);
-        }, 600);
-        return;
-      }
-
       const supabase = createClient();
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -58,12 +50,18 @@ function LoginForm() {
       });
 
       if (error) {
-        toast.error(error.message);
+        if (error.message.toLowerCase().includes("invalid login credentials")) {
+          toast.error("Incorrect email or password. Please try again.");
+        } else if (error.message.toLowerCase().includes("email not confirmed")) {
+          toast.error("Please verify your email before logging in. Check your inbox.");
+        } else {
+          toast.error(error.message);
+        }
         setIsLoading(false);
         return;
       }
 
-      toast.success("Successfully logged in!");
+      toast.success("Welcome back! Redirecting...");
       router.push(redirectTo);
       router.refresh();
     } catch {
@@ -82,6 +80,18 @@ function LoginForm() {
           Enter your credentials to access your fitness engine.
         </p>
       </div>
+
+      {emailPending && (
+        <div className="flex items-start gap-3 p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-sm">
+          <MailCheck className="h-5 w-5 shrink-0 mt-0.5" />
+          <div>
+            <p className="font-semibold">Check your email</p>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              We&apos;ve sent a verification link to your email address. Please click it to verify your account before logging in.
+            </p>
+          </div>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Email */}
@@ -156,31 +166,6 @@ function LoginForm() {
         </Button>
       </form>
 
-      <div className="relative my-4">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t border-zinc-200 dark:border-zinc-800" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">
-            Or quick demo
-          </span>
-        </div>
-      </div>
-
-      {/* Demo Sign In button for instant testing */}
-      <Button
-        type="button"
-        variant="outline"
-        onClick={() => {
-          setEmail("alex.athlete@apexfit.com");
-          setPassword("ApexFit2026!");
-          toast.info("Prefilled demo credentials. Click 'Sign In' to proceed.");
-        }}
-        className="w-full"
-      >
-        Fill Demo Credentials
-      </Button>
-
       <p className="text-center text-xs text-muted-foreground">
         Don&apos;t have an account?{" "}
         <Link
@@ -196,8 +181,9 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<LoadingState message="Loading athlete session..." />}>
+    <Suspense fallback={<LoadingState message="Loading..." />}>
       <LoginForm />
     </Suspense>
   );
 }
+

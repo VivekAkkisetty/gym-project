@@ -52,14 +52,18 @@ import { evaluateAchievements } from "@/lib/tracking/achievements";
 import { getStoredWorkoutSessions } from "@/lib/workout/storage";
 import { getStoredDietPlans } from "@/lib/nutrition/storage";
 import { BodyMeasurements, ProgressPhotoItem } from "@/types/tracking";
+import { useMounted } from "@/hooks";
 
 export default function ProgressPage() {
-  // State from persistence
-  const [measurements, setMeasurements] = useState<BodyMeasurements[]>(() => getStoredMeasurements());
-  const [dailyLogs, setDailyLogs] = useState(() => getStoredDailyLogs());
-  const [photos, setPhotos] = useState<ProgressPhotoItem[]>(() => getStoredPhotos());
-  const workouts = getStoredWorkoutSessions();
-  const dietPlans = getStoredDietPlans();
+  const isMounted = useMounted();
+  const [, setRefreshTick] = useState(0);
+
+  // Read from storage only after hydration mount to prevent SSR mismatch
+  const measurements = isMounted ? getStoredMeasurements() : [];
+  const dailyLogs = isMounted ? getStoredDailyLogs() : [];
+  const photos = isMounted ? getStoredPhotos() : [];
+  const workouts = isMounted ? getStoredWorkoutSessions() : [];
+  const dietPlans = isMounted ? getStoredDietPlans() : [];
 
   // Modals state
   const [isCheckinModalOpen, setIsCheckinModalOpen] = useState(false);
@@ -67,31 +71,30 @@ export default function ProgressPage() {
 
   // Analytics derivations
   const weightStats = calculateWeightStats(measurements);
-  const latestLog = dailyLogs[0] || {
-    caloriesConsumed: 2350,
-    proteinConsumedG: 165,
-    waterIntakeMl: 3100,
-    stepsCount: 10420,
-    workoutCompleted: true,
-  };
+  // Latest daily log — null if no data logged yet (never use fake numbers)
+  const latestLog = dailyLogs[0] ?? null;
 
   const weeklyMetrics = generateWeeklySummary(dailyLogs, measurements);
 
   const goalTargets = {
-    targetWeightKg: 78.0,
-    startWeightKg: weightStats.startingWeight || 82.4,
-    currentWeightKg: weightStats.currentWeight || 79.4,
+    targetWeightKg: weightStats.currentWeight ? weightStats.currentWeight - 2 : 0,
+    startWeightKg: weightStats.startingWeight || weightStats.currentWeight || 0,
+    currentWeightKg: weightStats.currentWeight || 0,
     dailyProteinGoalG: 160,
     dailyStepGoal: 10000,
-    dailyWaterGoalMl: 3200,
+    dailyWaterGoalMl: 3000,
     weeklyWorkoutGoal: 4,
   };
 
-  const goalProgressPercent = calculateGoalProgress(
-    goalTargets,
-    latestLog,
-    weeklyMetrics.completedWorkouts
-  );
+  const goalProgressPercent = latestLog
+    ? calculateGoalProgress(goalTargets, latestLog, weeklyMetrics.completedWorkouts)
+    : {
+        weightProgressPercent: 0,
+        proteinProgressPercent: 0,
+        stepProgressPercent: 0,
+        waterProgressPercent: 0,
+        workoutProgressPercent: 0,
+      };
 
   const achievements = evaluateAchievements(dailyLogs, workouts, measurements, 160);
 
@@ -106,24 +109,41 @@ export default function ProgressPage() {
   // Handlers
   const handleSaveCheckin = (entry: BodyMeasurements) => {
     saveMeasurement(entry);
-    setMeasurements(getStoredMeasurements());
+    setRefreshTick((t) => t + 1);
   };
 
   const handleUploadPhoto = (photo: ProgressPhotoItem) => {
     savePhoto(photo);
-    setPhotos(getStoredPhotos());
+    setRefreshTick((t) => t + 1);
   };
 
   const handleDeletePhoto = (id: string) => {
     deletePhoto(id);
-    setPhotos(getStoredPhotos());
+    setRefreshTick((t) => t + 1);
   };
 
   const handleDataReset = () => {
-    setMeasurements(getStoredMeasurements());
-    setDailyLogs(getStoredDailyLogs());
-    setPhotos(getStoredPhotos());
+    setRefreshTick((t) => t + 1);
   };
+
+  if (!isMounted) {
+    return (
+      <div className="space-y-6 animate-pulse">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1.5">
+            <div className="h-8 w-64 bg-muted/60 rounded-lg" />
+            <div className="h-4 w-96 bg-muted/40 rounded-lg" />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
+          {Array.from({ length: 7 }).map((_, i) => (
+            <div key={i} className="h-28 rounded-xl bg-card border border-border p-3.5" />
+          ))}
+        </div>
+        <div className="h-72 rounded-xl bg-card border border-border" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -171,13 +191,13 @@ export default function ProgressPage() {
         totalChangeKg={weightStats.totalChangeKg}
         sevenDayAverage={weightStats.sevenDayAverage}
         sevenDayChangeKg={weightStats.sevenDayChangeKg}
-        latestCalories={latestLog.caloriesConsumed}
+        latestCalories={latestLog?.caloriesConsumed ?? 0}
         targetCalories={2400}
-        latestProtein={latestLog.proteinConsumedG}
+        latestProtein={latestLog?.proteinConsumedG ?? 0}
         targetProtein={160}
-        latestWaterMl={latestLog.waterIntakeMl}
-        targetWaterMl={3200}
-        latestSteps={latestLog.stepsCount}
+        latestWaterMl={latestLog?.waterIntakeMl ?? 0}
+        targetWaterMl={3000}
+        latestSteps={latestLog?.stepsCount ?? 0}
         targetSteps={10000}
         workoutConsistencyPercent={weeklyMetrics.workoutConsistencyPercent}
       />
@@ -211,9 +231,9 @@ export default function ProgressPage() {
           <GoalProgressRings
             targets={goalTargets}
             progressPercent={goalProgressPercent}
-            latestProtein={latestLog.proteinConsumedG}
-            latestSteps={latestLog.stepsCount}
-            latestWaterMl={latestLog.waterIntakeMl}
+            latestProtein={latestLog?.proteinConsumedG ?? 0}
+            latestSteps={latestLog?.stepsCount ?? 0}
+            latestWaterMl={latestLog?.waterIntakeMl ?? 0}
             weeklyWorkouts={weeklyMetrics.completedWorkouts}
           />
 

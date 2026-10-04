@@ -182,15 +182,15 @@ export function Sidebar({
         })}
       </div>
 
-      {/* Streak / Daily Pro Tip widget (when expanded) */}
+      {/* Daily Guidance Tip widget (when expanded) */}
       {!collapsed && (
         <div className="p-3 mx-3 mb-3 rounded-xl bg-gradient-to-br from-emerald-500/10 via-zinc-900/5 to-emerald-500/5 border border-emerald-500/20 dark:bg-emerald-950/20">
           <div className="flex items-center gap-2 mb-1.5 text-emerald-600 dark:text-emerald-400 font-semibold text-xs">
-            <Flame className="h-4 w-4 animate-bounce" />
-            <span>7-Day Streak Active</span>
+            <Flame className="h-4 w-4" />
+            <span>Daily Discipline</span>
           </div>
           <p className="text-[11px] text-muted-foreground leading-snug">
-            Hit your protein & water targets today to maintain your tier.
+            Log your daily nutrition and training consistently to unlock accurate weekly analytics.
           </p>
         </div>
       )}

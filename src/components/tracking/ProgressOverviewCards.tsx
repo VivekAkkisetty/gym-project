@@ -127,8 +127,8 @@ export function ProgressOverviewCards({
               </div>
 
               <div>
-                <p className="text-xl font-bold tracking-tight text-foreground">{c.value}</p>
-                <p className="text-[10px] text-muted-foreground mt-0.5 truncate">{c.subtext}</p>
+                <p className="text-xl font-bold tracking-tight text-foreground" suppressHydrationWarning>{c.value}</p>
+                <p className="text-[10px] text-muted-foreground mt-0.5 truncate" suppressHydrationWarning>{c.subtext}</p>
               </div>
 
               <div className="pt-1">

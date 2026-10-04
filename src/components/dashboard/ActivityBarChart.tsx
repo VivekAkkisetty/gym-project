@@ -12,7 +12,8 @@ import {
 } from "recharts";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ActivityDayPoint } from "@/types/fitness";
-import { useMounted } from "@/lib/use-mounted";
+import { useMounted } from "@/hooks";
+
 
 interface ActivityBarChartProps {
   data: ActivityDayPoint[];

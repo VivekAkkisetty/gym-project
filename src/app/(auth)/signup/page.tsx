@@ -48,15 +48,6 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-      if (supabaseUrl.includes("placeholder-project")) {
-        toast.success("Account created successfully! Welcome to ApexFit.");
-        setTimeout(() => {
-          router.push("/dashboard");
-        }, 600);
-        return;
-      }
-
       const supabase = createClient();
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -69,7 +60,11 @@ export default function SignupPage() {
       });
 
       if (error) {
-        toast.error(error.message);
+        if (error.message.toLowerCase().includes("already registered")) {
+          toast.error("An account with this email already exists. Try logging in.");
+        } else {
+          toast.error(error.message);
+        }
         setIsLoading(false);
         return;
       }
@@ -78,36 +73,35 @@ export default function SignupPage() {
         // Create corresponding profile record using strictly authenticated user ID
         try {
           await supabase.from("profiles").upsert(
-            {
-              id: data.user.id,
-              full_name: fullName,
-            },
+            { id: data.user.id, full_name: fullName },
             { onConflict: "id" }
           );
-
           await supabase.from("user_preferences").upsert(
-            {
-              user_id: data.user.id,
-            },
+            { user_id: data.user.id },
             { onConflict: "user_id" }
           );
         } catch {
-          // If trigger already handled insertion, ignore duplicate insert gracefully
+          // Profile may already exist via DB trigger — safe to ignore
         }
       }
 
       if (data.session) {
-        toast.success("Account created! Redirecting to dashboard...");
+        // Email confirmation disabled in Supabase — user is immediately active
+        toast.success("Account created! Welcome to ApexFit 🎉");
         router.push("/dashboard");
       } else {
-        toast.info("Please check your email to confirm your account!");
-        router.push("/login");
+        // Email confirmation required
+        toast.success("Account created! Please check your email to verify your account.", {
+          duration: 6000,
+        });
+        router.push("/login?confirmed=pending");
       }
     } catch {
       toast.error("Registration failed. Please try again.");
       setIsLoading(false);
     }
   };
+
 
   return (
     <div className="space-y-6">
@@ -128,7 +122,7 @@ export default function SignupPage() {
             <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
               id="fullName"
-              placeholder="Alex Walker"
+              placeholder="Your full name"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
               className="pl-9"

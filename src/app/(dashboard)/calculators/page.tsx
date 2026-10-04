@@ -7,13 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { calculateBmr, calculateEpley1RM } from "@/lib/calculations";
 
 export default function CalculatorsPage() {
   // TDEE State
   const [tdeeWeight, setTdeeWeight] = useState("80");
   const [tdeeHeight, setTdeeHeight] = useState("180");
   const [tdeeAge, setTdeeAge] = useState("26");
-  const [tdeeGender, setTdeeGender] = useState("male");
+  const [tdeeGender, setTdeeGender] = useState<"male" | "female">("male");
   const [tdeeActivity, setTdeeActivity] = useState("1.55");
   const [calculatedTdee, setCalculatedTdee] = useState<number | null>(2720);
   const [calculatedBmr, setCalculatedBmr] = useState<number | null>(1755);
@@ -30,11 +31,15 @@ export default function CalculatorsPage() {
     const a = parseFloat(tdeeAge);
     const mult = parseFloat(tdeeActivity);
 
-    let bmr = 10 * w + 6.25 * h - 5 * a;
-    bmr += tdeeGender === "male" ? 5 : -161;
+    const bmr = calculateBmr({
+      weightKg: w,
+      heightCm: h,
+      age: a,
+      sex: tdeeGender,
+    });
 
     const tdee = Math.round(bmr * mult);
-    setCalculatedBmr(Math.round(bmr));
+    setCalculatedBmr(bmr);
     setCalculatedTdee(tdee);
   };
 
@@ -42,14 +47,9 @@ export default function CalculatorsPage() {
     e.preventDefault();
     const w = parseFloat(liftWeight);
     const r = parseFloat(liftReps);
-    if (r === 1) {
-      setCalculatedOneRm(w);
-      return;
-    }
-    // Epley Formula: w * (1 + r / 30)
-    const epley = w * (1 + r / 30);
-    setCalculatedOneRm(parseFloat(epley.toFixed(1)));
+    setCalculatedOneRm(calculateEpley1RM(w, r));
   };
+
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -125,7 +125,7 @@ export default function CalculatorsPage() {
                     <select
                       id="tGender"
                       value={tdeeGender}
-                      onChange={(e) => setTdeeGender(e.target.value)}
+                      onChange={(e) => setTdeeGender(e.target.value as "male" | "female")}
                       className="mt-1 flex h-10 w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
                     >
                       <option value="male">Male (+5 kcal constant)</option>

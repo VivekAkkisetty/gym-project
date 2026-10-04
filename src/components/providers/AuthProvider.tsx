@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { User, Session } from "@supabase/supabase-js";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 interface AuthContextType {
@@ -21,29 +22,31 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+  const isConfigured =
+    supabaseUrl.length > 0 && !supabaseUrl.includes("placeholder-project");
+
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
-  const isConfigured = supabaseUrl.length > 0 && !supabaseUrl.includes("placeholder-project");
+  const [isLoading, setIsLoading] = useState(isConfigured);
+  const router = useRouter();
 
   useEffect(() => {
     if (!isConfigured) {
-      // In dev mode without configured Supabase instance, establish mock demo user for visual testing
       return;
     }
 
+
     const supabase = createClient();
 
-    // Check active session
+    // Check active session on mount
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setIsLoading(false);
     });
 
-    // Listen for auth state changes
+    // Listen for auth state changes (login, logout, token refresh)
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -64,7 +67,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     setUser(null);
     setSession(null);
+    // Clear any cached local data and redirect to login
+    router.push("/login");
+    router.refresh();
   };
+
 
   return (
     <AuthContext.Provider value={{ user, session, isLoading: isConfigured ? isLoading : false, isConfigured, signOut }}>

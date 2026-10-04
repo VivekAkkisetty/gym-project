@@ -1,15 +1,4 @@
-import { useSyncExternalStore } from "react";
-
-const emptySubscribe = () => () => {};
-
 /**
- * Modern React 19 / Next.js safe hydration hook using useSyncExternalStore.
- * Avoids cascading setState within useEffect and prevents SSR hydration mismatch.
+ * Re-export useMounted from @/hooks/use-mounted for backward compatibility.
  */
-export function useMounted() {
-  return useSyncExternalStore(
-    emptySubscribe,
-    () => true,
-    () => false
-  );
-}
+export { useMounted } from "@/hooks/use-mounted";
