@@ -11,18 +11,18 @@ import { calculateBmr, calculateEpley1RM } from "@/lib/calculations";
 
 export default function CalculatorsPage() {
   // TDEE State
-  const [tdeeWeight, setTdeeWeight] = useState("80");
-  const [tdeeHeight, setTdeeHeight] = useState("180");
-  const [tdeeAge, setTdeeAge] = useState("26");
+  const [tdeeWeight, setTdeeWeight] = useState("");
+  const [tdeeHeight, setTdeeHeight] = useState("");
+  const [tdeeAge, setTdeeAge] = useState("");
   const [tdeeGender, setTdeeGender] = useState<"male" | "female">("male");
   const [tdeeActivity, setTdeeActivity] = useState("1.55");
-  const [calculatedTdee, setCalculatedTdee] = useState<number | null>(2720);
-  const [calculatedBmr, setCalculatedBmr] = useState<number | null>(1755);
+  const [calculatedTdee, setCalculatedTdee] = useState<number | null>(null);
+  const [calculatedBmr, setCalculatedBmr] = useState<number | null>(null);
 
   // 1RM State
-  const [liftWeight, setLiftWeight] = useState("100");
-  const [liftReps, setLiftReps] = useState("5");
-  const [calculatedOneRm, setCalculatedOneRm] = useState<number | null>(116.7);
+  const [liftWeight, setLiftWeight] = useState("");
+  const [liftReps, setLiftReps] = useState("");
+  const [calculatedOneRm, setCalculatedOneRm] = useState<number | null>(null);
 
   const calculateTdee = (e: React.FormEvent) => {
     e.preventDefault();
@@ -92,6 +92,7 @@ export default function CalculatorsPage() {
                       id="tWeight"
                       type="number"
                       step="0.1"
+                      placeholder="e.g. 75"
                       value={tdeeWeight}
                       onChange={(e) => setTdeeWeight(e.target.value)}
                       className="mt-1"
@@ -103,6 +104,7 @@ export default function CalculatorsPage() {
                     <Input
                       id="tHeight"
                       type="number"
+                      placeholder="e.g. 175"
                       value={tdeeHeight}
                       onChange={(e) => setTdeeHeight(e.target.value)}
                       className="mt-1"
@@ -114,6 +116,7 @@ export default function CalculatorsPage() {
                     <Input
                       id="tAge"
                       type="number"
+                      placeholder="e.g. 25"
                       value={tdeeAge}
                       onChange={(e) => setTdeeAge(e.target.value)}
                       className="mt-1"
@@ -193,6 +196,7 @@ export default function CalculatorsPage() {
                       id="lWeight"
                       type="number"
                       step="0.5"
+                      placeholder="e.g. 100"
                       value={liftWeight}
                       onChange={(e) => setLiftWeight(e.target.value)}
                       className="mt-1"
@@ -206,6 +210,7 @@ export default function CalculatorsPage() {
                       type="number"
                       min="1"
                       max="15"
+                      placeholder="e.g. 5"
                       value={liftReps}
                       onChange={(e) => setLiftReps(e.target.value)}
                       className="mt-1"

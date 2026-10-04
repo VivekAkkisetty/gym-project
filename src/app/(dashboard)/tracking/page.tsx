@@ -40,7 +40,7 @@ export default function TrackingPage() {
   const [calories, setCalories] = useState(existingForDate ? existingForDate.caloriesConsumed.toString() : "");
   const [caloriesBurned, setCaloriesBurned] = useState(existingForDate ? existingForDate.caloriesBurned.toString() : "");
   const [protein, setProtein] = useState(existingForDate ? existingForDate.proteinConsumedG.toString() : "");
-  const [sleepHours, setSleepHours] = useState(existingForDate ? existingForDate.sleepHours.toString() : "7.0");
+  const [sleepHours, setSleepHours] = useState(existingForDate ? existingForDate.sleepHours.toString() : "");
   const [workoutCompleted, setWorkoutCompleted] = useState(existingForDate ? existingForDate.workoutCompleted : false);
   const [mood, setMood] = useState<TrackingMood>(existingForDate ? existingForDate.mood : "good");
 
@@ -111,7 +111,7 @@ export default function TrackingPage() {
       setCalories("");
       setCaloriesBurned("");
       setProtein("");
-      setSleepHours("7.0");
+      setSleepHours("");
       setWorkoutCompleted(false);
       setMood("good");
     }
@@ -141,8 +141,8 @@ export default function TrackingPage() {
       caloriesConsumed: Math.max(0, parseInt(calories) || 0),
       caloriesBurned: Math.max(0, parseInt(caloriesBurned) || 0),
       proteinConsumedG: Math.max(0, parseInt(protein) || 0),
-      carbsConsumedG: 220,
-      fatConsumedG: 60,
+      carbsConsumedG: existingForDate ? existingForDate.carbsConsumedG : 0,
+      fatConsumedG: existingForDate ? existingForDate.fatConsumedG : 0,
       sleepHours: Math.max(0, parseFloat(sleepHours) || 0),
       workoutCompleted,
       mood,
@@ -387,6 +387,7 @@ export default function TrackingPage() {
                     step="0.5"
                     min="0"
                     max="24"
+                    placeholder="e.g. 7.5"
                     value={sleepHours}
                     onChange={(e) => setSleepHours(e.target.value)}
                     className="bg-card font-bold"

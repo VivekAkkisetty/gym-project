@@ -43,9 +43,9 @@ import {
 
 export default function DietPage() {
   const [plans, setPlans] = useState<DietPlan[]>(() => getSavedDietPlans());
-  const [activePlan, setActivePlan] = useState<DietPlan>(() => {
+  const [activePlan, setActivePlan] = useState<DietPlan | null>(() => {
     const loaded = getSavedDietPlans();
-    return loaded.find((p) => p.isActive) || loaded[0];
+    return loaded.find((p) => p.isActive) || loaded[0] || null;
   });
 
   // Modal controls
@@ -65,6 +65,15 @@ export default function DietPage() {
 
   // Compute live consumed totals from all meals in active plan
   const liveTotals = useMemo(() => {
+    if (!activePlan) {
+      return {
+        calories: 0,
+        protein: 0,
+        carbs: 0,
+        fat: 0,
+        fiber: 0,
+      };
+    }
     let calories = 0;
     let protein = 0;
     let carbs = 0;
@@ -92,7 +101,7 @@ export default function DietPage() {
 
   // Add food item to selected meal slot
   const handleAddFoodToMeal = (foodItem: MealFoodItem) => {
-    if (!selectedMealSlotId) return;
+    if (!selectedMealSlotId || !activePlan) return;
 
     const updatedMeals = activePlan.meals.map((meal) => {
       if (meal.id === selectedMealSlotId) {
@@ -117,6 +126,8 @@ export default function DietPage() {
 
   // Remove food item from a meal slot
   const handleRemoveFood = (mealId: string, itemId: string) => {
+    if (!activePlan) return;
+
     const updatedMeals = activePlan.meals.map((meal) => {
       if (meal.id === mealId) {
         return {
@@ -155,7 +166,7 @@ export default function DietPage() {
     originalItem: MealFoodItem,
     candidate: SubstitutionCandidate
   ) => {
-    if (!substitutionTarget) return;
+    if (!substitutionTarget || !activePlan) return;
 
     const { mealId } = substitutionTarget;
     const newItem: MealFoodItem = {
@@ -216,6 +227,8 @@ export default function DietPage() {
 
   // Save current plan snapshot as new
   const handleSaveCurrentAsNew = (name: string) => {
+    if (!activePlan) return;
+
     const newPlan: DietPlan = {
       ...activePlan,
       id: `plan-${Date.now()}`,
@@ -233,8 +246,8 @@ export default function DietPage() {
   const handleDeletePlan = (planId: string) => {
     const remaining = deleteDietPlan(planId);
     setPlans(remaining);
-    if (activePlan.id === planId && remaining.length > 0) {
-      setActivePlan(remaining[0]);
+    if (activePlan?.id === planId) {
+      setActivePlan(remaining[0] || null);
     }
   };
 
@@ -277,7 +290,7 @@ export default function DietPage() {
             </Badge>
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-            Active Blueprint: <span className="font-bold text-foreground">{activePlan.name}</span>
+            Active Blueprint: <span className="font-bold text-foreground">{activePlan ? activePlan.name : "None Selected"}</span>
           </p>
         </div>
 
@@ -296,8 +309,10 @@ export default function DietPage() {
           <Button
             size="sm"
             onClick={() => {
-              if (activePlan.meals.length > 0) {
+              if (activePlan && activePlan.meals.length > 0) {
                 handleOpenAddFoodModal(activePlan.meals[0].id);
+              } else {
+                toast.info("Please create or select a diet plan first.");
               }
             }}
             className="gap-1.5 text-xs font-semibold shadow-xs"
@@ -327,55 +342,92 @@ export default function DietPage() {
 
         {/* TAB 1: MEAL PLANNER & DAILY TRACKER */}
         <TabsContent value="planner" className="space-y-6 pt-4">
-          {/* Top Analytics Row: Macro Allocation Donut + Daily Hydration Card */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-1">
-              <MacroDonutChart
-                caloriesConsumed={liveTotals.calories}
-                calorieTarget={activePlan.dailyCalories}
-                proteinConsumed={liveTotals.protein}
-                proteinTarget={activePlan.targetProteinG}
-                carbsConsumed={liveTotals.carbs}
-                carbsTarget={activePlan.targetCarbsG}
-                fatConsumed={liveTotals.fat}
-                fatTarget={activePlan.targetFatG}
-                fiberConsumed={liveTotals.fiber}
-                fiberTarget={activePlan.targetFiberG}
-              />
-            </div>
-            <div className="lg:col-span-2">
-              <WaterTrackerCard
-                initialTargetMl={3200}
-                initialConsumedMl={2250}
-              />
-            </div>
-          </div>
-
-          {/* Meal Slots Section */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-base font-bold text-foreground">
-                  Scheduled Daily Meals ({activePlan.meals.length} Slots)
-                </h3>
-                <p className="text-xs text-muted-foreground">
-                  Click &apos;Add Food&apos; on any meal or use &apos;Substitute&apos; to swap ingredients while maintaining protein ratios.
-                </p>
+          {!activePlan ? (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-1">
+                  <MacroDonutChart
+                    caloriesConsumed={0}
+                    calorieTarget={2000}
+                    proteinConsumed={0}
+                    proteinTarget={150}
+                    carbsConsumed={0}
+                    carbsTarget={200}
+                    fatConsumed={0}
+                    fatTarget={65}
+                    fiberConsumed={0}
+                    fiberTarget={30}
+                  />
+                </div>
+                <div className="lg:col-span-2">
+                  <WaterTrackerCard
+                    initialTargetMl={3000}
+                    initialConsumedMl={0}
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 gap-4">
-              {activePlan.meals.map((meal) => (
-                <MealCard
-                  key={meal.id}
-                  meal={meal}
-                  onAddFood={handleOpenAddFoodModal}
-                  onRemoveFood={handleRemoveFood}
-                  onSubstituteFood={handleOpenSubstitutionModal}
-                />
-              ))}
+              <Card className="border-dashed p-8 text-center space-y-3">
+                <Utensils className="h-10 w-10 text-muted-foreground mx-auto" />
+                <h3 className="text-lg font-semibold">No Diet Plan Active</h3>
+                <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                  You don&apos;t have any active meal plan yet. Use the Target Engine tab to calculate and generate your personalized nutrition plan.
+                </p>
+              </Card>
             </div>
-          </div>
+          ) : (
+            <>
+              {/* Top Analytics Row: Macro Allocation Donut + Daily Hydration Card */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-1">
+                  <MacroDonutChart
+                    caloriesConsumed={liveTotals.calories}
+                    calorieTarget={activePlan.dailyCalories}
+                    proteinConsumed={liveTotals.protein}
+                    proteinTarget={activePlan.targetProteinG}
+                    carbsConsumed={liveTotals.carbs}
+                    carbsTarget={activePlan.targetCarbsG}
+                    fatConsumed={liveTotals.fat}
+                    fatTarget={activePlan.targetFatG}
+                    fiberConsumed={liveTotals.fiber}
+                    fiberTarget={activePlan.targetFiberG}
+                  />
+                </div>
+                <div className="lg:col-span-2">
+                  <WaterTrackerCard
+                    initialTargetMl={3200}
+                    initialConsumedMl={0}
+                  />
+                </div>
+              </div>
+
+              {/* Meal Slots Section */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-base font-bold text-foreground">
+                      Scheduled Daily Meals ({activePlan.meals.length} Slots)
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      Click &apos;Add Food&apos; on any meal or use &apos;Substitute&apos; to swap ingredients while maintaining protein ratios.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4">
+                  {activePlan.meals.map((meal) => (
+                    <MealCard
+                      key={meal.id}
+                      meal={meal}
+                      onAddFood={handleOpenAddFoodModal}
+                      onRemoveFood={handleRemoveFood}
+                      onSubstituteFood={handleOpenSubstitutionModal}
+                    />
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </TabsContent>
 
         {/* TAB 2: PERSONAL PROFILE & TARGET ENGINE */}
@@ -509,7 +561,7 @@ export default function DietPage() {
         open={searchModalOpen}
         onOpenChange={setSearchModalOpen}
         targetMealSlotName={
-          activePlan.meals.find((m) => m.id === selectedMealSlotId)?.slotName || "Meal"
+          activePlan?.meals.find((m) => m.id === selectedMealSlotId)?.slotName || "Meal"
         }
         onAddFood={handleAddFoodToMeal}
       />
@@ -525,7 +577,7 @@ export default function DietPage() {
         open={savedPlansModalOpen}
         onOpenChange={setSavedPlansModalOpen}
         savedPlans={plans}
-        activePlanId={activePlan.id}
+        activePlanId={activePlan?.id || ""}
         onSelectPlan={(plan) => setActivePlan(plan)}
         onDeletePlan={handleDeletePlan}
         onSaveCurrentAsNew={handleSaveCurrentAsNew}

@@ -16,7 +16,7 @@ interface WaterTrackerCardProps {
 
 export function WaterTrackerCard({
   initialTargetMl = 3200,
-  initialConsumedMl = 2250,
+  initialConsumedMl = 0,
   onUpdateConsumed,
   className,
 }: WaterTrackerCardProps) {

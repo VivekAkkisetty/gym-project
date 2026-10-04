@@ -41,9 +41,9 @@ export function ProgressOverviewCards({
   const cards = [
     {
       label: "Current Weight",
-      value: `${currentWeight} kg`,
-      subtext: `7-Day Avg: ${sevenDayAverage} kg`,
-      badge: `${totalChangeKg > 0 ? "+" : ""}${totalChangeKg} kg overall`,
+      value: currentWeight > 0 ? `${currentWeight} kg` : "No data",
+      subtext: sevenDayAverage > 0 ? `7-Day Avg: ${sevenDayAverage} kg` : "Log a check-in",
+      badge: currentWeight > 0 ? `${totalChangeKg > 0 ? "+" : ""}${totalChangeKg} kg overall` : "No check-ins",
       badgeVariant: isLosingWeight ? "emerald" : "amber",
       icon: Scale,
       trendIcon: isLosingWeight ? TrendingDown : TrendingUp,
@@ -52,9 +52,9 @@ export function ProgressOverviewCards({
     },
     {
       label: "7-Day Weight Delta",
-      value: `${sevenDayChangeKg > 0 ? "+" : ""}${sevenDayChangeKg} kg`,
-      subtext: "vs. 7 days ago",
-      badge: sevenDayChangeKg <= 0 ? "On Track" : "Surplus",
+      value: currentWeight > 0 ? `${sevenDayChangeKg > 0 ? "+" : ""}${sevenDayChangeKg} kg` : "--",
+      subtext: currentWeight > 0 ? "vs. 7 days ago" : "No trend yet",
+      badge: currentWeight > 0 ? (sevenDayChangeKg <= 0 ? "On Track" : "Surplus") : "Pending",
       badgeVariant: sevenDayChangeKg <= 0 ? "emerald" : "outline",
       icon: isLosingWeight ? TrendingDown : TrendingUp,
       color: "text-blue-500",

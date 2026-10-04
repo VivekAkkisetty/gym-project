@@ -99,7 +99,7 @@ export function Header({ onOpenQuickLog }: HeaderProps) {
                 aria-label="User account menu"
               >
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-600 font-bold text-xs text-white">
-                  {user?.email?.charAt(0).toUpperCase() || "A"}
+                  {user?.email?.charAt(0).toUpperCase() || "U"}
                 </div>
                 <ChevronDown className="h-3.5 w-3.5 text-muted-foreground hidden sm:block" />
               </Button>
@@ -107,10 +107,10 @@ export function Header({ onOpenQuickLog }: HeaderProps) {
             <DropdownMenuContent align="end" className="w-56">
               <div className="p-2">
                 <p className="text-xs font-semibold text-foreground">
-                  {user?.user_metadata?.full_name || "Athlete"}
+                  {user?.user_metadata?.full_name || (user?.email ? user.email.split("@")[0] : "Athlete")}
                 </p>
                 <p className="text-[11px] text-muted-foreground truncate">
-                  {user?.email || "athlete@apexfit.local"}
+                  {user?.email || "Not signed in"}
                 </p>
               </div>
               <DropdownMenuSeparator />

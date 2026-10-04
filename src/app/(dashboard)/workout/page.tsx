@@ -44,7 +44,7 @@ import { WorkoutRoutine, WorkoutSplitPlan, CompletedWorkoutSession } from "@/typ
 
 export default function WorkoutPage() {
   // Persistence state
-  const [activeSplit, setActiveSplit] = useState<WorkoutSplitPlan>(() => getActiveSplitPlan());
+  const [activeSplit, setActiveSplit] = useState<WorkoutSplitPlan | null>(() => getActiveSplitPlan());
   const [sessions, setSessions] = useState<CompletedWorkoutSession[]>(() => getStoredWorkoutSessions());
 
   // Modals state
@@ -92,7 +92,13 @@ export default function WorkoutPage() {
             </Badge>
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground">
-            Current Split: <span className="font-semibold text-emerald-500">{activeSplit.name}</span> ({activeSplit.daysPerWeek} Days/Week)
+            Current Split: {activeSplit ? (
+              <>
+                <span className="font-semibold text-emerald-500">{activeSplit.name}</span> ({activeSplit.daysPerWeek} Days/Week)
+              </>
+            ) : (
+              <span className="font-semibold text-muted-foreground">None Selected</span>
+            )}
           </p>
         </div>
 
@@ -146,92 +152,104 @@ export default function WorkoutPage() {
         {/* TAB 1: ACTIVE SPLIT ROUTINES */}
         {/* ========================================================= */}
         <TabsContent value="active-split" className="space-y-6">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-lg font-bold text-foreground">
-                Routines in {activeSplit.name}
-              </h3>
-              <p className="text-xs text-muted-foreground">
-                Select a routine to begin your live active workout with audio rest timers and progressive overload tracking.
+          {!activeSplit ? (
+            <Card className="border-dashed p-8 text-center space-y-3">
+              <Dumbbell className="h-10 w-10 text-muted-foreground mx-auto" />
+              <h3 className="text-lg font-semibold">No Active Workout Split</h3>
+              <p className="text-sm text-muted-foreground max-w-md mx-auto">
+                You haven&apos;t chosen an active routine yet. Browse the Split Library tab to activate a structured training program or generate an AI routine.
               </p>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-xs"
-              onClick={() => setInspectingSplit(activeSplit)}
-            >
-              Educational Overview
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {activeSplit.routines.map((routine, idx) => (
-              <Card
-                key={routine.id}
-                className="flex flex-col justify-between border-border hover:border-zinc-300 dark:hover:border-zinc-700 transition-all shadow-xs"
-              >
+            </Card>
+          ) : (
+            <>
+              <div className="flex items-center justify-between">
                 <div>
-                  <CardHeader className="pb-3">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground font-mono">
-                        {routine.dayLabel}
-                      </span>
-                      {idx === 0 && (
-                        <Badge variant="default" className="text-[10px] bg-emerald-600">
-                          Recommended Next
-                        </Badge>
-                      )}
-                    </div>
-                    <CardTitle className="text-base font-bold text-foreground line-clamp-1">
-                      {routine.name}
-                    </CardTitle>
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground pt-1">
-                      <span className="flex items-center gap-1">
-                        <Dumbbell className="h-3.5 w-3.5" />
-                        {routine.exercises.length} Movements
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Clock className="h-3.5 w-3.5" />
-                        ~{routine.estimatedMinutes} mins
-                      </span>
-                    </div>
-                  </CardHeader>
-
-                  <CardContent className="space-y-2 text-xs">
-                    {routine.exercises.map((ex, eIdx) => (
-                      <div
-                        key={eIdx}
-                        className="flex items-center justify-between p-2.5 rounded-lg bg-muted/40 border border-border/50"
-                      >
-                        <div>
-                          <p className="font-semibold text-foreground truncate max-w-[170px]">
-                            {ex.name}
-                          </p>
-                          <p className="text-[11px] text-muted-foreground">
-                            {ex.sets} sets × {ex.reps} reps
-                          </p>
-                        </div>
-                        <Badge variant="outline" className="font-mono text-[10px] capitalize">
-                          {ex.equipment}
-                        </Badge>
-                      </div>
-                    ))}
-                  </CardContent>
+                  <h3 className="text-lg font-bold text-foreground">
+                    Routines in {activeSplit.name}
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    Select a routine to begin your live active workout with audio rest timers and progressive overload tracking.
+                  </p>
                 </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs"
+                  onClick={() => setInspectingSplit(activeSplit)}
+                >
+                  Educational Overview
+                </Button>
+              </div>
 
-                <div className="p-4 pt-2">
-                  <Button
-                    className="w-full gap-2 font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
-                    onClick={() => setSelectedRoutineForWorkout(routine)}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {activeSplit.routines.map((routine, idx) => (
+                  <Card
+                    key={routine.id}
+                    className="flex flex-col justify-between border-border hover:border-zinc-300 dark:hover:border-zinc-700 transition-all shadow-xs"
                   >
-                    <Play className="h-4 w-4" />
-                    <span>Start Workout Session</span>
-                  </Button>
-                </div>
-              </Card>
-            ))}
-          </div>
+                    <div>
+                      <CardHeader className="pb-3">
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground font-mono">
+                            {routine.dayLabel}
+                          </span>
+                          {idx === 0 && (
+                            <Badge variant="default" className="text-[10px] bg-emerald-600">
+                              Recommended Next
+                            </Badge>
+                          )}
+                        </div>
+                        <CardTitle className="text-base font-bold text-foreground line-clamp-1">
+                          {routine.name}
+                        </CardTitle>
+                        <div className="flex items-center gap-3 text-xs text-muted-foreground pt-1">
+                          <span className="flex items-center gap-1">
+                            <Dumbbell className="h-3.5 w-3.5" />
+                            {routine.exercises.length} Movements
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3.5 w-3.5" />
+                            ~{routine.estimatedMinutes} mins
+                          </span>
+                        </div>
+                      </CardHeader>
+
+                      <CardContent className="space-y-2 text-xs">
+                        {routine.exercises.map((ex, eIdx) => (
+                          <div
+                            key={eIdx}
+                            className="flex items-center justify-between p-2.5 rounded-lg bg-muted/40 border border-border/50"
+                          >
+                            <div>
+                              <p className="font-semibold text-foreground truncate max-w-[170px]">
+                                {ex.name}
+                              </p>
+                              <p className="text-[11px] text-muted-foreground">
+                                {ex.sets} sets × {ex.reps} reps
+                              </p>
+                            </div>
+                            <Badge variant="outline" className="font-mono text-[10px] capitalize">
+                              {ex.equipment}
+                            </Badge>
+                          </div>
+                        ))}
+                      </CardContent>
+                    </div>
+
+                    <div className="p-4 pt-2">
+                      <Button
+                        className="w-full gap-2 font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs"
+                        onClick={() => setSelectedRoutineForWorkout(routine)}
+                      >
+                        <Play className="h-4 w-4" />
+                        <span>Start Workout Session</span>
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </>
+          )}
         </TabsContent>
 
         {/* ========================================================= */}
@@ -249,7 +267,7 @@ export default function WorkoutPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {WORKOUT_SPLITS.map((split) => {
-              const isCurrent = activeSplit.id === split.id;
+              const isCurrent = activeSplit?.id === split.id;
               return (
                 <Card
                   key={split.id}
@@ -657,7 +675,7 @@ export default function WorkoutPage() {
         isOpen={!!inspectingSplit}
         onClose={() => setInspectingSplit(null)}
         onSetActive={handleActivateSplit}
-        isActive={activeSplit.id === inspectingSplit?.id}
+        isActive={activeSplit?.id === inspectingSplit?.id}
       />
     </div>
   );

@@ -204,15 +204,15 @@ export function Sidebar({
           )}
         >
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-200 dark:bg-zinc-800 font-bold text-xs text-foreground">
-            {user?.email?.charAt(0).toUpperCase() || "A"}
+            {user?.email?.charAt(0).toUpperCase() || "U"}
           </div>
           {!collapsed && (
             <div className="flex-1 truncate">
               <p className="text-xs font-semibold text-foreground truncate">
-                {user?.user_metadata?.full_name || "Athlete"}
+                {user?.user_metadata?.full_name || (user?.email ? user.email.split("@")[0] : "Athlete")}
               </p>
               <p className="text-[11px] text-muted-foreground truncate">
-                {user?.email || "athlete@apexfit.local"}
+                {user?.email || "Not signed in"}
               </p>
             </div>
           )}

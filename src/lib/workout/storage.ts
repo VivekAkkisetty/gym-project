@@ -49,8 +49,8 @@ export function deleteWorkoutSession(id: string): void {
   }
 }
 
-export function getActiveSplitPlan(): WorkoutSplitPlan {
-  if (typeof window === "undefined") return WORKOUT_SPLITS[2]; // Default PPL
+export function getActiveSplitPlan(): WorkoutSplitPlan | null {
+  if (typeof window === "undefined") return null;
 
   try {
     const raw = localStorage.getItem(ACTIVE_SPLIT_STORAGE_KEY);
@@ -61,8 +61,7 @@ export function getActiveSplitPlan(): WorkoutSplitPlan {
     console.error("Failed to load active split:", err);
   }
 
-  // Default to Push Pull Legs (PPL)
-  return WORKOUT_SPLITS[2];
+  return null;
 }
 
 export function setActiveSplitPlan(plan: WorkoutSplitPlan): void {
@@ -77,6 +76,7 @@ export function setActiveSplitPlan(plan: WorkoutSplitPlan): void {
 
 export function getStoredWorkoutSplits(): WorkoutSplitPlan[] {
   const active = getActiveSplitPlan();
+  if (!active) return [...WORKOUT_SPLITS];
   const others = WORKOUT_SPLITS.filter((s) => s.id !== active.id);
   return [active, ...others];
 }

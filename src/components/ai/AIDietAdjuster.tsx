@@ -29,12 +29,12 @@ interface AIDietAdjusterProps {
 
 export function AIDietAdjuster({
   activePlan,
-  weightDelta7DaysKg = -0.2,
+  weightDelta7DaysKg = 0,
   onPlanUpdated,
 }: AIDietAdjusterProps) {
   const [goal, setGoal] = useState<"fat_loss" | "muscle_gain" | "maintenance" | "body_recomposition">("fat_loss");
-  const [weightDelta, setWeightDelta] = useState<number>(weightDelta7DaysKg);
-  const [adherence, setAdherence] = useState<number>(85);
+  const [weightDelta, setWeightDelta] = useState<number>(weightDelta7DaysKg || 0);
+  const [adherence, setAdherence] = useState<number>(100);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [adjustment, setAdjustment] = useState<AIDietAdjustmentResult | null>(null);
 

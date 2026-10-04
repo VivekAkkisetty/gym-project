@@ -52,9 +52,9 @@ export default function AssistantPage() {
 
   // Sanitized context for AI prompt
   const sanitizedContext: SanitizedUserContext = {
-    fitnessGoal: "Muscle Hypertrophy & Leanness",
-    weightKg: weightStats.currentWeight || 79.4,
-    heightCm: 180,
+    fitnessGoal: "General Fitness",
+    weightKg: weightStats.currentWeight || undefined,
+    heightCm: undefined,
     activeDietName: activePlan?.name,
     targetCalories: activePlan?.dailyCalories,
     targetProteinG: activePlan?.targetProteinG,
@@ -174,8 +174,8 @@ export default function AssistantPage() {
               activeDietPlan={activePlan}
               activeWorkoutSplit={activeSplit}
               weeklyMetrics={weeklyMetrics}
-              currentWeightKg={weightStats.currentWeight || 79.4}
-              sevenDayAvgWeight={weightStats.sevenDayAverage || 79.6}
+              currentWeightKg={weightStats.currentWeight || 0}
+              sevenDayAvgWeight={weightStats.sevenDayAverage || 0}
             />
           ) : (
             <div className="p-8 text-center text-xs text-muted-foreground border border-border rounded-lg">
